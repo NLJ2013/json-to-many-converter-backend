@@ -11,7 +11,7 @@ async function bootstrap() {
     .addTag('JSON to Many Converter')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/swagger', app, document);
   await app.listen(3000, () => console.log('Server is running on port 3000'));
 }
 bootstrap();
