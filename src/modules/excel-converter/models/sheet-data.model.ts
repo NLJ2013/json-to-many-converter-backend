@@ -8,5 +8,5 @@ export class SheetData {
   @ApiProperty()
   pageName: string;
   @ApiProperty()
-  data: any[];
+  data: any;
 }

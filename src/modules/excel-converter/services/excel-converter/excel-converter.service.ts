@@ -12,7 +12,6 @@ import { Response } from 'express';
 
 @Injectable()
 export class ExcelConverterService {
-
   private logger: Logger = new Logger(ExcelConverterService.name);
 
   async convertToExcel(
@@ -20,26 +19,32 @@ export class ExcelConverterService {
     res: Response,
   ): Promise<StreamableFile> {
     try {
-      if (!jsonData?.headers || !jsonData?.headers.length) {
-        throw new HttpException('Headers are required', HttpStatus.BAD_REQUEST);
-      }
-
-      if (!jsonData?.data || !jsonData?.data.length) {
+      if (!jsonData?.data) {
         throw new HttpException(
           'Cell Data is required',
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      const headers = this.addStylesToHeaders(jsonData.headers);
-
-      const workSheet = utils.json_to_sheet(jsonData.data);
-      utils.sheet_add_aoa(workSheet, [headers], { origin: 'A1' });
+      const dataArray = Object.keys(jsonData.data).map((key) => {
+        if (key === 'address') {
+          return [
+            key,
+            ...Object.keys(jsonData.data[key]).map(
+              (subKey) => `${key}.${subKey}`,
+            ),
+            jsonData.data[key],
+          ];
+        } else {
+          return [key, jsonData.data[key]];
+        }
+      });
+      const workSheet = utils.aoa_to_sheet([dataArray]);
       const workbook = utils.book_new();
       utils.book_append_sheet(
         workbook,
         workSheet,
-        jsonData?.pageName || DEFAULT_SHEET_NAME,
+        jsonData?.sheetName ?? DEFAULT_SHEET_NAME,
       );
       writeFile(workbook, `jsonData?.sheetName ?? DEFAULT_SHEET_NAME`, {
         compression: true,
